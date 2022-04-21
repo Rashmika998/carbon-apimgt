@@ -36,6 +36,9 @@ import org.wso2.carbon.apimgt.impl.token.RevokedTokenService;
 import org.wso2.carbon.apimgt.impl.webhooks.SubscriptionsDataService;
 import org.wso2.carbon.apimgt.tracing.TracingService;
 import org.wso2.carbon.apimgt.tracing.TracingTracer;
+import org.wso2.carbon.apimgt.tracing.telemetry.TelemetryService;
+import org.wso2.carbon.apimgt.tracing.telemetry.TelemetrySpan;
+import org.wso2.carbon.apimgt.tracing.telemetry.TelemetryTracer;
 import org.wso2.carbon.base.api.ServerConfigurationService;
 import org.wso2.carbon.core.util.KeyStoreManager;
 import org.wso2.carbon.endpoint.service.EndpointAdmin;
@@ -66,6 +69,7 @@ public class ServiceReferenceHolder {
     private ThrottleProperties throttleProperties;
     private ConfigurationContext axis2ConfigurationContext;
     private TracingService tracingService;
+    private TelemetryService telemetryService;
     private ServerConfigurationService serverConfigurationService;
     private RestApiAdmin restAPIAdmin;
     private SequenceAdmin sequenceAdmin;
@@ -75,6 +79,7 @@ public class ServiceReferenceHolder {
     private ThrottleDataPublisher throttleDataPublisher;
     private Map<String,AbstractAPIMgtGatewayJWTGenerator> apiMgtGatewayJWTGenerators  = new HashMap<>();
     private TracingTracer tracer;
+    private TelemetryTracer telemetryTracer;
     private CacheInvalidationService cacheInvalidationService;
     private RevokedTokenService revokedTokenService;
     private APIThrottleDataService throttleDataService;
@@ -152,6 +157,13 @@ public class ServiceReferenceHolder {
     }
     public void setTracingService(TracingService tracingService) {
         this.tracingService = tracingService;
+    }
+
+    public TelemetryService getTelemetryService() {
+        return telemetryService;
+    }
+    public void setTelemetryService(TelemetryService telemetryService) {
+        this.telemetryService = telemetryService;
     }
 
     /**
@@ -243,9 +255,19 @@ public class ServiceReferenceHolder {
         return tracer;
     }
 
+    public TelemetryTracer getTelemetryTracer() {
+
+        return telemetryTracer;
+    }
+
     public void setTracer(TracingTracer tracer) {
 
         this.tracer = tracer;
+    }
+
+    public void setTelemetry(TelemetryTracer telemetryTracer) {
+
+        this.telemetryTracer = telemetryTracer;
     }
 
     public JWTValidationService getJwtValidationService() {
@@ -387,4 +409,5 @@ public class ServiceReferenceHolder {
 
         this.redisPool = redisPool;
     }
+
 }

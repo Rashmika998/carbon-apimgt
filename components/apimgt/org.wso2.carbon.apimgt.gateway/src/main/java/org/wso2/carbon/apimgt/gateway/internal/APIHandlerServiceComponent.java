@@ -48,6 +48,9 @@ import org.wso2.carbon.apimgt.impl.jms.listener.JMSListenerShutDownService;
 import org.wso2.carbon.apimgt.impl.jwt.JWTValidationService;
 import org.wso2.carbon.apimgt.impl.keymgt.KeyManagerDataService;
 import org.wso2.carbon.apimgt.tracing.TracingService;
+import org.wso2.carbon.apimgt.tracing.Util;
+import org.wso2.carbon.apimgt.tracing.telemetry.TelemetryService;
+import org.wso2.carbon.apimgt.tracing.telemetry.TelemetryUtil;
 import org.wso2.carbon.base.ServerConfiguration;
 import org.wso2.carbon.base.api.ServerConfigurationService;
 import org.wso2.carbon.core.ServerShutdownHandler;
@@ -60,7 +63,6 @@ import org.wso2.carbon.sequences.services.SequenceAdmin;
 import org.wso2.carbon.utils.Axis2ConfigurationContextObserver;
 import org.wso2.carbon.utils.CarbonUtils;
 import org.wso2.carbon.utils.ConfigurationContextService;
-import redis.clients.jedis.JedisMonitor;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
@@ -111,8 +113,16 @@ public class APIHandlerServiceComponent {
         // Start JWT revoked map cleaner.
         RevokedJWTMapCleaner revokedJWTMapCleaner = new RevokedJWTMapCleaner();
         revokedJWTMapCleaner.startJWTRevokedMapCleaner();
-        ServiceReferenceHolder.getInstance().setTracer(ServiceReferenceHolder.getInstance().getTracingService()
-                .buildTracer(APIMgtGatewayConstants.SERVICE_NAME));
+
+        if (TelemetryUtil.telemetryEnabled()) {
+            if (Util.legacy()) {
+                ServiceReferenceHolder.getInstance().setTracer(ServiceReferenceHolder.getInstance().getTracingService()
+                        .buildTracer(APIMgtGatewayConstants.SERVICE_NAME));
+            } else {
+                ServiceReferenceHolder.getInstance().setTelemetry(ServiceReferenceHolder.getInstance().getTelemetryService
+                        ().buildTelemetryTracer(APIMgtGatewayConstants.SERVICE_NAME));
+            }
+        }
 
         RedisConfig redisConfig =
                 ServiceReferenceHolder.getInstance().getAPIManagerConfiguration().getRedisConfig();
@@ -148,7 +158,7 @@ public class APIHandlerServiceComponent {
         if (log.isDebugEnabled()) {
             log.debug("API handlers component deactivated");
         }
-            clientPool.cleanup();
+        clientPool.cleanup();
         if (registration != null) {
             log.debug("Unregistering ThrottleDataService...");
             registration.unregister();
@@ -287,6 +297,22 @@ public class APIHandlerServiceComponent {
     protected void unsetTracingService(TracingService tracingService) {
 
         ServiceReferenceHolder.getInstance().setTracingService(null);
+    }
+
+    @Reference(
+            name = "org.wso2.carbon.apimgt.tracing.telemetry",
+            service = org.wso2.carbon.apimgt.tracing.telemetry.TelemetryService.class,
+            cardinality = ReferenceCardinality.MANDATORY,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "unsetTracingService")
+    protected void setTracingService(TelemetryService telemetryService) {
+
+        ServiceReferenceHolder.getInstance().setTelemetryService(telemetryService);
+    }
+
+    protected void unsetTracingService(TelemetryService telemetryService) {
+
+        ServiceReferenceHolder.getInstance().setTelemetryService(null);
     }
 
     @Reference(
@@ -437,7 +463,7 @@ public class APIHandlerServiceComponent {
         ServiceReferenceHolder.getInstance().setKeyManagerDataService(null);
     }
 
-    private JedisPool getJedisPool(RedisConfig redisConfig){
+    private JedisPool getJedisPool(RedisConfig redisConfig) {
 
         JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
         jedisPoolConfig.setMaxTotal(redisConfig.getMaxTotal());
