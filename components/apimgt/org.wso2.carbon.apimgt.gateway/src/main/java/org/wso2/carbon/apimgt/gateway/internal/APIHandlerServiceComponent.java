@@ -113,16 +113,15 @@ public class APIHandlerServiceComponent {
         // Start JWT revoked map cleaner.
         RevokedJWTMapCleaner revokedJWTMapCleaner = new RevokedJWTMapCleaner();
         revokedJWTMapCleaner.startJWTRevokedMapCleaner();
-
         if (TelemetryUtil.telemetryEnabled()) {
             if (Util.legacy()) {
                 ServiceReferenceHolder.getInstance().setTracer(ServiceReferenceHolder.getInstance().getTracingService()
                         .buildTracer(APIMgtGatewayConstants.SERVICE_NAME));
             } else {
-                ServiceReferenceHolder.getInstance().setTelemetry(ServiceReferenceHolder.getInstance().getTelemetryService
-                        ().buildTelemetryTracer(APIMgtGatewayConstants.SERVICE_NAME));
+                ServiceReferenceHolder.getInstance().setTelemetry(ServiceReferenceHolder.getInstance()
+                        .getTelemetryService().buildTelemetryTracer(APIMgtGatewayConstants.SERVICE_NAME));
             }
-        }
+        };
 
         RedisConfig redisConfig =
                 ServiceReferenceHolder.getInstance().getAPIManagerConfiguration().getRedisConfig();
@@ -463,7 +462,7 @@ public class APIHandlerServiceComponent {
         ServiceReferenceHolder.getInstance().setKeyManagerDataService(null);
     }
 
-    private JedisPool getJedisPool(RedisConfig redisConfig) {
+    private JedisPool getJedisPool(RedisConfig redisConfig){
 
         JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
         jedisPoolConfig.setMaxTotal(redisConfig.getMaxTotal());
@@ -487,4 +486,3 @@ public class APIHandlerServiceComponent {
         return jedisPool;
     }
 }
-

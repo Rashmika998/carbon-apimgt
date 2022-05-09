@@ -37,19 +37,16 @@ import org.wso2.carbon.apimgt.tracing.telemetry.TelemetryTracer;
 import org.wso2.carbon.apimgt.tracing.telemetry.TelemetryUtil;
 
 public class APIMgtLatencyStatsHandler extends AbstractHandler {
-
     private static final Log log = LogFactory.getLog(APIMgtLatencyStatsHandler.class);
     private OpenAPI openAPI;
     private String apiUUID;
     private String swagger;
 
     public String getApiUUID() {
-
         return apiUUID;
     }
 
     public void setApiUUID(String apiUUID) {
-
         this.apiUUID = apiUUID;
     }
 

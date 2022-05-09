@@ -1505,11 +1505,6 @@ public class GatewayUtils {
         }
     }
 
-    public static TelemetryTracer getTelemetryTracer() {
-
-        return ServiceReferenceHolder.getInstance().getTelemetryTracer();
-    }
-
     public static TracingTracer getTracingTracer() {
         return ServiceReferenceHolder.getInstance().getTracer();
     }

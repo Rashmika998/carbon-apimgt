@@ -16,6 +16,7 @@
 
 package org.wso2.carbon.apimgt.gateway.handlers.ext;
 
+
 import org.apache.axis2.Constants;
 import org.apache.axis2.addressing.EndpointReference;
 import org.apache.commons.logging.Log;
@@ -40,6 +41,7 @@ import org.wso2.carbon.metrics.manager.Timer;
 
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
 
 /**
  * A simple extension handler for the APIs deployed in the API gateway. This handler first
@@ -107,7 +109,6 @@ public class APIManagerExtensionHandler extends AbstractHandler {
                 requestMediationSpan = TelemetryUtil.startSpan(APIMgtGatewayConstants.REQUEST_MEDIATION,
                         responseLatencySpan, tracer);
             }
-
         }
         try {
             boolean isMediated = mediate(messageContext, DIRECTION_IN);
@@ -133,7 +134,6 @@ public class APIManagerExtensionHandler extends AbstractHandler {
                             APIMgtGatewayConstants.REQUEST_MEDIATION_ERROR);
                 }
             }
-
             throw e;
         } finally {
             if (TelemetryUtil.telemetryEnabled()) {
@@ -151,7 +151,6 @@ public class APIManagerExtensionHandler extends AbstractHandler {
 
     @MethodStats
     public boolean handleResponse(MessageContext messageContext) {
-
         Timer.Context context = startMetricTimer(DIRECTION_OUT);
         long executionStartTime = System.nanoTime();
         TracingSpan responseMediationTracingSpan = null;
@@ -199,15 +198,12 @@ public class APIManagerExtensionHandler extends AbstractHandler {
     }
 
     protected void stopMetricTimer(Timer.Context context) {
-
         context.stop();
     }
 
     protected Timer.Context startMetricTimer(String direction) {
-
         Timer timer = MetricManager.timer(org.wso2.carbon.metrics.manager.Level.INFO,
                 MetricManager.name(APIConstants.METRICS_PREFIX, this.getClass().getSimpleName(), direction));
         return timer.start();
     }
 }
-

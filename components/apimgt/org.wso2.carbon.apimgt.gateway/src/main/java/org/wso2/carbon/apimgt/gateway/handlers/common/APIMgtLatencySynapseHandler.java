@@ -40,7 +40,6 @@ public class APIMgtLatencySynapseHandler extends AbstractSynapseHandler {
 
     @Override
     public boolean handleRequestInFlow(MessageContext messageContext) {
-
         TracingTracer tracer = ServiceReferenceHolder.getInstance().getTracer();
         TelemetryTracer telemetryTracer = ServiceReferenceHolder.getInstance().getTelemetryTracer();
 
@@ -70,7 +69,6 @@ public class APIMgtLatencySynapseHandler extends AbstractSynapseHandler {
                 messageContext.setProperty(APIMgtGatewayConstants.RESPONSE_LATENCY, responseLatencySpan);
             }
         }
-
         return true;
     }
 
@@ -109,15 +107,12 @@ public class APIMgtLatencySynapseHandler extends AbstractSynapseHandler {
                             .setProperty(org.apache.axis2.context.MessageContext.TRANSPORT_HEADERS, headers);
                 }
             }
-
         }
-
         return true;
     }
 
     @Override
     public boolean handleResponseInFlow(MessageContext messageContext) {
-
         if (TelemetryUtil.telemetryEnabled()) {
             if (Util.legacy() && messageContext.getProperty(APIMgtGatewayConstants.BACKEND_LATENCY_SPAN) != null) {
                 TracingSpan backendLatencySpan =
@@ -131,13 +126,11 @@ public class APIMgtLatencySynapseHandler extends AbstractSynapseHandler {
                 TelemetryUtil.finishSpan(backendLatencySpan);
             }
         }
-
         return true;
     }
 
     @Override
     public boolean handleResponseOutFlow(MessageContext messageContext) {
-
         if (TelemetryUtil.telemetryEnabled()) {
             if (Util.legacy()) {
                 Object resourceSpanObject = messageContext.getProperty(APIMgtGatewayConstants.RESOURCE_SPAN);
@@ -171,9 +164,7 @@ public class APIMgtLatencySynapseHandler extends AbstractSynapseHandler {
                 }
                 TelemetryUtil.finishSpan(responseLatencySpan);
             }
-
         }
-
         return true;
     }
 }

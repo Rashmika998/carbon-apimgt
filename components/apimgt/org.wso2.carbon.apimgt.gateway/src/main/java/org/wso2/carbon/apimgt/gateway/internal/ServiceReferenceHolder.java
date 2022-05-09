@@ -409,5 +409,4 @@ public class ServiceReferenceHolder {
 
         this.redisPool = redisPool;
     }
-
 }

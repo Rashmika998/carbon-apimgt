@@ -63,60 +63,18 @@ public class APIMgtGoogleAnalyticsTrackingHandler extends AbstractHandler {
     private static final String COOKIE_NAME = "__utmmobile";
 
     private static final String ANONYMOUS_USER_ID = "anonymous";
-    protected GoogleAnalyticsConfig config = null;
-    /**
-     * The key for getting the google analytics configuration - key refers to a/an [registry] entry
-     */
+
+    /** The key for getting the google analytics configuration - key refers to a/an [registry] entry    */
     private String configKey = null;
-    /**
-     * Version number of the throttle policy
-     */
+    /** Version number of the throttle policy */
     private long version;
 
-    /**
-     * A string is empty in our terms, if it is null, empty or a dash.
-     */
-    private static boolean isEmpty(String in) {
-
-        return in == null || "-".equals(in) || "".equals(in);
-    }
-
-    /**
-     * Generate a visitor id for this hit. If there is a visitor id in the
-     * messageContext, use that. Otherwise use a random number.
-     */
-    private static String getVisitorId(String account, String userAgent, MessageContext msgCtx)
-            throws NoSuchAlgorithmException, UnsupportedEncodingException {
-
-        if (msgCtx.getProperty(COOKIE_NAME) != null) {
-            return (String) msgCtx.getProperty(COOKIE_NAME);
-        }
-        String message;
-
-        AuthenticationContext authContext = APISecurityUtils.getAuthenticationContext(msgCtx);
-        if (authContext != null) {
-            message = authContext.getApiKey();
-        } else {
-            message = ANONYMOUS_USER_ID;
-        }
-
-        MessageDigest m = MessageDigest.getInstance("MD5");
-        m.update(message.getBytes("UTF-8"), 0, message.length());
-        byte[] sum = m.digest();
-        BigInteger messageAsNumber = new BigInteger(1, sum);
-        String md5String = messageAsNumber.toString(16);
-
-        /* Pad to make sure id is 32 characters long. */
-        while (md5String.length() < 32) {
-            md5String = "0" + md5String;
-        }
-
-        return "0x" + md5String.substring(0, 16);
-    }
+    protected GoogleAnalyticsConfig config = null;
 
     @MethodStats
     @Override
     public boolean handleRequest(MessageContext msgCtx) {
+
 
         TracingSpan tracingSpan = null;
         TracingTracer tracingTracer = null;
@@ -201,7 +159,6 @@ public class APIMgtGoogleAnalyticsTrackingHandler extends AbstractHandler {
                                     .setProperty(org.apache.axis2.context.MessageContext.TRANSPORT_HEADERS, headers);
                         }
                     }
-
                 }
                 trackPageView(msgCtx);
             } catch (Exception e) {
@@ -225,14 +182,12 @@ public class APIMgtGoogleAnalyticsTrackingHandler extends AbstractHandler {
                     Util.finishSpan(tracingSpan);
                 } else {
                     TelemetryUtil.finishSpan(span);
-
                 }
             }
         }
     }
 
     protected GoogleAnalyticsConfig getGoogleAnalyticsConfig(OMElement entryValue) {
-
         return new GoogleAnalyticsConfig(entryValue);
     }
 
@@ -244,7 +199,6 @@ public class APIMgtGoogleAnalyticsTrackingHandler extends AbstractHandler {
      * @throws Exception
      */
     private void trackPageView(MessageContext msgCtx) throws Exception {
-
         @SuppressWarnings("rawtypes")
         Map headers = (Map) ((Axis2MessageContext) msgCtx).getAxis2MessageContext()
                 .getProperty(org.apache.axis2.context.MessageContext.TRANSPORT_HEADERS);
@@ -262,7 +216,7 @@ public class APIMgtGoogleAnalyticsTrackingHandler extends AbstractHandler {
         String xForwardedFor = (String) headers
                 .get(org.wso2.carbon.apimgt.gateway.handlers.analytics.Constants.X_FORWARDED_FOR_HEADER);
         String userIP;
-        if (xForwardedFor == null || xForwardedFor.isEmpty()) {
+        if(xForwardedFor == null || xForwardedFor.isEmpty()) {
             userIP = (String) ((Axis2MessageContext) msgCtx).getAxis2MessageContext()
                     .getProperty(org.apache.axis2.context.MessageContext.REMOTE_ADDR);
         } else {
@@ -291,8 +245,7 @@ public class APIMgtGoogleAnalyticsTrackingHandler extends AbstractHandler {
                         .getProperty(Constants.Configuration.HTTP_METHOD);
 
         GoogleAnalyticsData data = new GoogleAnalyticsData
-                .DataBuilder(account, GOOGLE_ANALYTICS_TRACKER_VERSION, visitorId,
-                GoogleAnalyticsConstants.HIT_TYPE_PAGEVIEW)
+                .DataBuilder(account, GOOGLE_ANALYTICS_TRACKER_VERSION , visitorId , GoogleAnalyticsConstants.HIT_TYPE_PAGEVIEW)
                 .setDocumentPath(documentPath)
                 .setDocumentHostName(domainName)
                 .setDocumentTitle(httpMethod)
@@ -313,54 +266,88 @@ public class APIMgtGoogleAnalyticsTrackingHandler extends AbstractHandler {
         }
     }
 
+    /**
+     * A string is empty in our terms, if it is null, empty or a dash.
+     */
+    private static boolean isEmpty(String in) {
+        return in == null || "-".equals(in) || "".equals(in);
+    }
+
+    /**
+     *
+     * Generate a visitor id for this hit. If there is a visitor id in the
+     * messageContext, use that. Otherwise use a random number.
+     *
+     */
+    private static String getVisitorId(String account, String userAgent, MessageContext msgCtx)
+            throws NoSuchAlgorithmException, UnsupportedEncodingException {
+
+        if (msgCtx.getProperty(COOKIE_NAME) != null) {
+            return (String) msgCtx.getProperty(COOKIE_NAME);
+        }
+        String message;
+
+        AuthenticationContext authContext  = APISecurityUtils.getAuthenticationContext(msgCtx);
+        if (authContext != null) {
+            message = authContext.getApiKey();
+        } else {
+            message = ANONYMOUS_USER_ID;
+        }
+
+        MessageDigest m = MessageDigest.getInstance("MD5");
+        m.update(message.getBytes("UTF-8"), 0, message.length());
+        byte[] sum = m.digest();
+        BigInteger messageAsNumber = new BigInteger(1, sum);
+        String md5String = messageAsNumber.toString(16);
+
+        /* Pad to make sure id is 32 characters long. */
+        while (md5String.length() < 32) {
+            md5String = "0" + md5String;
+        }
+
+        return "0x" + md5String.substring(0, 16);
+    }
+
     @MethodStats
     @Override
     public boolean handleResponse(MessageContext arg0) {
-
         return true;
     }
 
     private void handleException(String msg) {
-
         log.error(msg);
         throw new SynapseException(msg);
     }
 
-    public String getConfigKey() {
-
-        return configKey;
-    }
-
-    public void setConfigKey(String configKey) {
-
-        this.configKey = configKey;
-    }
-
     private class GoogleAnalyticsConfig {
-
         private boolean enabled;
         private String googleAnalyticsTrackingID;
 
         public GoogleAnalyticsConfig(OMElement config) {
-
             googleAnalyticsTrackingID = config.getFirstChildWithName(new QName(
                             org.wso2.carbon.apimgt.gateway.handlers.analytics.Constants.API_GOOGLE_ANALYTICS_TRACKING_ID))
                     .getText();
             String googleAnalyticsEnabledStr = config.getFirstChildWithName(new QName(
                             org.wso2.carbon.apimgt.gateway.handlers.analytics.Constants.API_GOOGLE_ANALYTICS_TRACKING_ENABLED))
                     .getText();
-            enabled = googleAnalyticsEnabledStr != null && JavaUtils.isTrueExplicitly(googleAnalyticsEnabledStr);
-        }
-
-        public boolean isEnabled() {
-
-            return enabled;
+            enabled =  googleAnalyticsEnabledStr != null && JavaUtils.isTrueExplicitly(googleAnalyticsEnabledStr);
         }
 
         public void setEnabled(boolean enabled) {
-
             this.enabled = enabled;
         }
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+    }
+
+    public String getConfigKey() {
+        return configKey;
+    }
+
+    public void setConfigKey(String configKey) {
+        this.configKey = configKey;
     }
 
 }
